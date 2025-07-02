@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/inyourtime/fastify-line#readme",
   "dependencies": {
+    "@fastify/error": "^4.2.0",
     "@line/bot-sdk": "^10.0.0",
     "fastify-plugin": "^5.0.1",
     "raw-body": "^3.0.0"

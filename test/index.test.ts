@@ -1,8 +1,8 @@
-import { LINE_SIGNATURE_HTTP_HEADER_NAME, type MessageEvent } from '@line/bot-sdk'
 import type { FastifyInstance } from 'fastify'
 import Fastify from 'fastify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import fastifyLine from '../src/index.js' // Adjust path as needed
+import { SignatureValidationError } from '../src/error.js'
+import fastifyLine, { type MessageEvent } from '../src/index.js' // Adjust path as needed
 import { kRawBody } from '../src/symbols'
 import { kRoutes, printRoutes } from './helpers/print-routes.js'
 
@@ -280,6 +280,13 @@ describe('fastifyLine plugin', () => {
         },
       )
 
+      fastify.setErrorHandler((error, request, reply) => {
+        if (error instanceof SignatureValidationError) {
+          console.log(error)
+        }
+        reply.send(error)
+      })
+
       await fastify.ready()
 
       const response = await fastify.inject({
@@ -293,7 +300,7 @@ describe('fastifyLine plugin', () => {
       })
 
       expect(response.statusCode).toBe(500)
-      console.log(response.json())
+      // console.log(response.json())
     })
 
     it('should fail when signature header is missing', async () => {
@@ -319,7 +326,7 @@ describe('fastifyLine plugin', () => {
       })
 
       expect(response.statusCode).toBe(500)
-      console.log(response.json())
+      // console.log(response.json())
     })
   })
 })
