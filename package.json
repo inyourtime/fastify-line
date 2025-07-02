@@ -1,0 +1,38 @@
+{
+  "name": "fastify-line",
+  "version": "1.0.0",
+  "description": "Fastify plugin for the LINE Messaging API",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "test": "vitest --watch",
+    "test:coverage": "vitest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inyourtime/fastify-line.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/inyourtime/fastify-line/issues"
+  },
+  "homepage": "https://github.com/inyourtime/fastify-line#readme",
+  "dependencies": {
+    "@line/bot-sdk": "^10.0.0",
+    "fastify-plugin": "^5.0.1",
+    "raw-body": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
+    "@types/node": "^24.0.8",
+    "@vitest/coverage-v8": "^3.2.4",
+    "fastify": "^5.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
