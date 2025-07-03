@@ -2,8 +2,7 @@ import { LINE_SIGNATURE_HTTP_HEADER_NAME, messagingApi, validateSignature } from
 import type { FastifyPluginCallback, preHandlerHookHandler, preParsingHookHandler } from 'fastify'
 import fp from 'fastify-plugin'
 import getRawBody from 'raw-body'
-import { SignatureValidationError } from './error.js'
-// import { FST_LINE_INVALID_SIGNATURE, FST_LINE_NO_SIGNATURE } from './error.js'
+import { InvalidSignatureError, MissingSignatureError } from './error.js'
 import { kRawBody } from './symbols.js'
 import type { FastifyLineOptions } from './types.js'
 
@@ -61,12 +60,12 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
     const signature = request.headers[LINE_SIGNATURE_HTTP_HEADER_NAME] as string
 
     if (!signature) {
-      done(new SignatureValidationError('Missing signature'))
+      done(new MissingSignatureError())
       return
     }
 
     if (!validateSignature(request[kRawBody], channelSecret, signature)) {
-      done(new SignatureValidationError('Invalid signature', signature))
+      done(new InvalidSignatureError(signature))
       return
     }
 
@@ -76,9 +75,7 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
   done()
 }
 
-const fastifyLine = fp(plugin, {
+export const fastifyLine = fp(plugin, {
   name: 'fastify-line',
   fastify: '5.x',
 })
-
-export default fastifyLine

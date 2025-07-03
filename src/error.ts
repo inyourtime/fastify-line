@@ -1,13 +1,15 @@
 import createError from '@fastify/error'
 
-export class SignatureValidationError extends createError(
-  'LINE_SIGNATURE_VALIDATION_FAILED',
-  'Signature validation failed',
+export class MissingSignatureError extends createError(
+  'FST_ERR_LINE_SIGNATURE_MISSING',
+  'Line signature is missing',
+) {}
+
+export class InvalidSignatureError extends createError(
+  'FST_ERR_LINE_SIGNATURE_INVALID',
+  'Line signature validation failed',
 ) {
-  constructor(
-    public message: string,
-    public signature?: string,
-  ) {
+  constructor(public signature: string) {
     super()
   }
 }

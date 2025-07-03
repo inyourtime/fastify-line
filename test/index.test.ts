@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import Fastify from 'fastify'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SignatureValidationError } from '../src/error.js'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { InvalidSignatureError, MissingSignatureError } from '../src/error.js'
 import fastifyLine, { type MessageEvent } from '../src/index.js' // Adjust path as needed
 import { kRawBody } from '../src/symbols'
 import { kRoutes, printRoutes } from './helpers/print-routes.js'
@@ -40,7 +40,6 @@ describe('fastifyLine plugin', () => {
 
   beforeEach(() => {
     fastify = Fastify()
-    vi.clearAllMocks()
   })
 
   afterEach(async () => {
@@ -135,7 +134,7 @@ describe('fastifyLine plugin', () => {
       })
 
       expect(response.statusCode).toBe(200)
-      expect(response.json()).toEqual({ success: true })
+      expect(response.json()).toStrictEqual({ success: true })
     })
 
     it('should not add hooks to routes without lineWebhook config', async () => {
@@ -150,7 +149,7 @@ describe('fastifyLine plugin', () => {
 
       // Should not fail due to missing signature since hooks weren't added
       expect(response.statusCode).toBe(200)
-      expect(response.json()).toEqual({ success: true })
+      expect(response.json()).toStrictEqual({ success: true })
     })
   })
 
@@ -164,7 +163,6 @@ describe('fastifyLine plugin', () => {
 
     it('should parse raw body in preParsing hook', async () => {
       let rawBody: string | undefined
-
       fastify.post(
         '/webhook',
         {
@@ -270,6 +268,8 @@ describe('fastifyLine plugin', () => {
     })
 
     it('should fail with invalid signature', async () => {
+      let setErrorHandlerCalled = false
+      let signature: string | undefined
       fastify.post(
         '/webhook',
         {
@@ -280,9 +280,10 @@ describe('fastifyLine plugin', () => {
         },
       )
 
-      fastify.setErrorHandler((error, request, reply) => {
-        if (error instanceof SignatureValidationError) {
-          console.log(error)
+      fastify.setErrorHandler((error, _request, reply) => {
+        if (error instanceof InvalidSignatureError) {
+          setErrorHandlerCalled = true
+          signature = error.signature
         }
         reply.send(error)
       })
@@ -300,10 +301,18 @@ describe('fastifyLine plugin', () => {
       })
 
       expect(response.statusCode).toBe(500)
-      // console.log(response.json())
+      expect(response.json()).toStrictEqual({
+        statusCode: 500,
+        code: 'FST_ERR_LINE_SIGNATURE_INVALID',
+        error: 'Internal Server Error',
+        message: 'Line signature validation failed',
+      })
+      expect(setErrorHandlerCalled).toBe(true)
+      expect(signature).toBe('WqJD7WAIZhWcXThMCf8jZnwG3Hmn7EF36plkQGkj48w=')
     })
 
     it('should fail when signature header is missing', async () => {
+      let setErrorHandlerCalled = false
       fastify.post(
         '/webhook',
         {
@@ -313,6 +322,13 @@ describe('fastifyLine plugin', () => {
           return {}
         },
       )
+
+      fastify.setErrorHandler((error, _request, reply) => {
+        if (error instanceof MissingSignatureError) {
+          setErrorHandlerCalled = true
+        }
+        reply.send(error)
+      })
 
       await fastify.ready()
 
@@ -326,7 +342,114 @@ describe('fastifyLine plugin', () => {
       })
 
       expect(response.statusCode).toBe(500)
-      // console.log(response.json())
+      expect(response.json()).toStrictEqual({
+        statusCode: 500,
+        code: 'FST_ERR_LINE_SIGNATURE_MISSING',
+        error: 'Internal Server Error',
+        message: 'Line signature is missing',
+      })
+      expect(setErrorHandlerCalled).toBe(true)
+    })
+  })
+
+  describe('Hook Order and Existing Hooks', () => {
+    beforeEach(async () => {
+      await fastify.register(fastifyLine, {
+        channelSecret: mockChannelSecret,
+        channelAccessToken: mockChannelAccessToken,
+      })
+    })
+
+    it('should preserve existing preParsing and preHandler hooks (one)', async () => {
+      let preParsingCalled = false
+      let preHandlerCalled = false
+
+      fastify.post(
+        '/webhook',
+        {
+          config: { lineWebhook: true },
+          preParsing: (_request, _reply, payload, done) => {
+            preParsingCalled = true
+            done(null, payload)
+          },
+          preHandler: (_request, _reply, done) => {
+            preHandlerCalled = true
+            done()
+          },
+        },
+        () => {
+          return { success: true }
+        },
+      )
+
+      await fastify.ready()
+
+      const response = await fastify.inject({
+        method: 'POST',
+        url: '/webhook',
+        payload: {
+          events: [webhook],
+          destination: DESTINATION,
+        },
+        headers: { ...webhookSignature },
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toEqual({ success: true })
+      expect(preParsingCalled).toBe(true)
+      expect(preHandlerCalled).toBe(true)
+    })
+
+    it('should preserve existing preParsing and preHandler hooks (many)', async () => {
+      let preParsingCalls = 0
+      let preHandlerCalls = 0
+
+      fastify.post(
+        '/webhook',
+        {
+          config: { lineWebhook: true },
+          preParsing: [
+            (_request, _reply, payload, done) => {
+              preParsingCalls++
+              done(null, payload)
+            },
+            (_request, _reply, payload, done) => {
+              preParsingCalls++
+              done(null, payload)
+            },
+          ],
+          preHandler: [
+            (_request, _reply, done) => {
+              preHandlerCalls++
+              done()
+            },
+            (_request, _reply, done) => {
+              preHandlerCalls++
+              done()
+            },
+          ],
+        },
+        () => {
+          return { success: true }
+        },
+      )
+
+      await fastify.ready()
+
+      const response = await fastify.inject({
+        method: 'POST',
+        url: '/webhook',
+        payload: {
+          events: [webhook],
+          destination: DESTINATION,
+        },
+        headers: { ...webhookSignature },
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toEqual({ success: true })
+      expect(preParsingCalls).toBe(2)
+      expect(preHandlerCalls).toBe(2)
     })
   })
 })
