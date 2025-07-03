@@ -1,4 +1,4 @@
-import createError from '@fastify/error'
+import { createError } from '@fastify/error'
 
 export class MissingSignatureError extends createError(
   'FST_ERR_LINE_SIGNATURE_MISSING',
