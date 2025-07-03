@@ -57,6 +57,9 @@
   "peerDependencies": {
     "@line/bot-sdk": "^10.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
