@@ -43,11 +43,22 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
   })
 
   const parseRawBody: preParsingHookHandler = (request, _reply, payload, done) => {
+    const { bodyLimit } = request.routeOptions
+
     getRawBody(
       payload,
-      { length: null, limit: request.routeOptions.bodyLimit, encoding: 'utf8' },
+      {
+        length: null,
+        limit: bodyLimit, // avoid memory leak
+        encoding: 'utf8', // ensure the body is a string
+      },
       (err, buf) => {
-        if (err) return
+        if (err) {
+          /**
+           * the error is managed by fastify server
+           */
+          return
+        }
 
         request[kRawBody] = buf
       },
