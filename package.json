@@ -13,11 +13,12 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "test": "vitest --coverage",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",

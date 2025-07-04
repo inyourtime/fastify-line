@@ -3,12 +3,12 @@ import Fastify from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InvalidSignatureError, MissingSignatureError } from '../src/error.js'
 import fastifyLine, { type MessageEvent } from '../src/index.js' // Adjust path as needed
-import { kRawBody } from '../src/symbols'
+import { kRawBody } from '../src/symbols.js'
 import { kRoutes, printRoutes } from './helpers/print-routes.js'
 
 const DESTINATION = 'Uaaaabbbbccccddddeeeeffff'
 const mockChannelSecret = 'test_channel_secret'
-const mockChannelAccessToken = 'test_channel_secret'
+const mockChannelAccessToken = 'test_channel_access_token'
 
 describe('fastifyLine plugin', () => {
   let fastify: FastifyInstance

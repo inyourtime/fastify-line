@@ -7,7 +7,6 @@
     "esModuleInterop": true,
     "strict": true,
     "resolveJsonModule": true,
-    "removeComments": true,
     "newLine": "lf",
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
