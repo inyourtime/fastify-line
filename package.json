@@ -1,0 +1,71 @@
+{
+  "name": "fastify-line",
+  "version": "0.0.0",
+  "description": "Fastify plugin for the LINE Messaging API",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "test": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inyourtime/fastify-line.git"
+  },
+  "homepage": "https://github.com/inyourtime/fastify-line#readme",
+  "keywords": [
+    "fastify",
+    "line",
+    "linebot",
+    "sdk",
+    "plugin",
+    "webhook",
+    "bot",
+    "fastify-plugin"
+  ],
+  "author": "Sahachai (https://github.com/inyourtime)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/inyourtime/fastify-line/issues"
+  },
+  "dependencies": {
+    "@fastify/error": "^4.2.0",
+    "fastify-plugin": "^5.0.1",
+    "raw-body": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
+    "@fastify/pre-commit": "^2.2.0",
+    "@line/bot-sdk": "^10.0.0",
+    "@types/node": "^24.0.8",
+    "@vitest/coverage-v8": "^3.2.4",
+    "fastify": "^5.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "@line/bot-sdk": "^10.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ]
+}
