@@ -1,5 +1,4 @@
 import type { messagingApi } from '@line/bot-sdk'
-import { kRawBody } from './symbols.js'
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -11,7 +10,12 @@ declare module 'fastify' {
   }
 
   interface FastifyRequest {
-    [kRawBody]: string
+    /**
+     * The raw body of the request.
+     * This is populated when the `lineWebhook` config is set to `true`.
+     * It contains the raw JSON payload sent by LINE.
+     */
+    rawBody?: string
   }
 
   interface FastifyContextConfig {

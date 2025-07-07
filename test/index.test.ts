@@ -3,7 +3,6 @@ import Fastify from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InvalidSignatureError, MissingSignatureError } from '../src/error.js'
 import fastifyLine, { type MessageEvent } from '../src/index.js' // Adjust path as needed
-import { kRawBody } from '../src/symbols.js'
 import { kRoutes, printRoutes } from './helpers/print-routes.js'
 
 const DESTINATION = 'Uaaaabbbbccccddddeeeeffff'
@@ -83,6 +82,20 @@ describe('fastifyLine plugin', () => {
       expect(fastify.line).toBeDefined()
       expect(fastify.line).toHaveProperty('pushMessage')
       expect(fastify.line).toHaveProperty('replyMessage')
+    })
+
+    it('should throw error if plugin is registered multiple times', async () => {
+      await fastify.register(fastifyLine, {
+        channelSecret: mockChannelSecret,
+        channelAccessToken: mockChannelAccessToken,
+      })
+
+      await expect(
+        fastify.register(fastifyLine, {
+          channelSecret: mockChannelSecret,
+          channelAccessToken: mockChannelAccessToken,
+        }),
+      ).rejects.toThrow('fastify-line plugin has already been registered')
     })
   })
 
@@ -169,8 +182,8 @@ describe('fastifyLine plugin', () => {
           config: { lineWebhook: true },
         },
         (request) => {
-          rawBody = request[kRawBody]
-          return request[kRawBody]
+          rawBody = request.rawBody
+          return request.rawBody
         },
       )
 
@@ -207,7 +220,7 @@ describe('fastifyLine plugin', () => {
           config: { lineWebhook: true },
         },
         (request) => {
-          rawBody = request[kRawBody]
+          rawBody = request.rawBody
           return {}
         },
       )
@@ -244,7 +257,7 @@ describe('fastifyLine plugin', () => {
           config: { lineWebhook: true },
         },
         (request) => {
-          return request[kRawBody]
+          return request.rawBody
         },
       )
 
@@ -490,7 +503,7 @@ describe('fastifyLine plugin', () => {
           config: { lineWebhook: true },
         },
         (request) => {
-          return request[kRawBody]
+          return request.rawBody
         },
       )
 
