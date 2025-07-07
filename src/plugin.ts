@@ -3,10 +3,14 @@ import type { FastifyPluginCallback, preHandlerHookHandler, preParsingHookHandle
 import fp from 'fastify-plugin'
 import getRawBody from 'raw-body'
 import { InvalidSignatureError, MissingSignatureError } from './error.js'
-import { kRawBody } from './symbols.js'
 import type { FastifyLineOptions } from './types.js'
 
 const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) => {
+  if (fastify.line) {
+    done(new Error('fastify-line plugin has already been registered'))
+    return
+  }
+
   const { channelSecret, channelAccessToken, skipVerify = false } = opts
 
   if (!channelSecret) {
@@ -21,9 +25,7 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
   const { MessagingApiClient } = messagingApi
   const client = new MessagingApiClient({ channelAccessToken })
 
-  if (!fastify.line) {
-    fastify.decorate('line', client)
-  }
+  fastify.decorate('line', client)
 
   fastify.addHook('onRoute', (routeOptions) => {
     const skip = routeOptions.method !== 'POST' || !routeOptions.config?.lineWebhook
@@ -54,7 +56,7 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
         limit: bodyLimit, // avoid memory leak
         encoding: 'utf8', // ensure the body is a string
       },
-      (err, buf) => {
+      (err, string) => {
         if (err) {
           /**
            * the error is managed by fastify server
@@ -62,7 +64,7 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
           return
         }
 
-        request[kRawBody] = buf
+        request.rawBody = string
       },
     )
 
@@ -77,7 +79,7 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
       return
     }
 
-    if (!validateSignature(request[kRawBody], channelSecret, signature)) {
+    if (request.rawBody && !validateSignature(request.rawBody, channelSecret, signature)) {
       done(new InvalidSignatureError(signature))
       return
     }
