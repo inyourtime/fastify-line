@@ -452,4 +452,65 @@ describe('fastifyLine plugin', () => {
       expect(preHandlerCalls).toBe(2)
     })
   })
+
+  describe('Skip Signature Verification', () => {
+    beforeEach(async () => {
+      fastify.register(printRoutes)
+
+      await fastify.register(fastifyLine, {
+        channelSecret: mockChannelSecret,
+        channelAccessToken: mockChannelAccessToken,
+        skipVerify: true,
+      })
+    })
+
+    it('should not add preHandler if skipVerify is true', async () => {
+      fastify.post(
+        '/webhook',
+        {
+          config: { lineWebhook: true },
+        },
+        () => {},
+      )
+
+      const route = fastify[kRoutes]()[0]
+
+      expect(route).toBeDefined()
+      expect(route.method).toBe('POST')
+      expect(route.url).toBe('/webhook')
+      expect(route.preParsing![0]).toBeInstanceOf(Function)
+      expect(route.preParsing![0].name).toBe('parseRawBody')
+      expect(route.preHandler).toBeUndefined()
+    })
+
+    it('should accept requests without signature when skipVerify is true', async () => {
+      fastify.post(
+        '/webhook',
+        {
+          config: { lineWebhook: true },
+        },
+        (request) => {
+          return request[kRawBody]
+        },
+      )
+
+      await fastify.ready()
+
+      const response = await fastify.inject({
+        method: 'POST',
+        url: '/webhook',
+        payload: {
+          events: [webhook],
+          destination: DESTINATION,
+        },
+        // No signature header
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toStrictEqual({
+        events: [webhook],
+        destination: DESTINATION,
+      })
+    })
+  })
 })

@@ -7,7 +7,7 @@ import { kRawBody } from './symbols.js'
 import type { FastifyLineOptions } from './types.js'
 
 const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) => {
-  const { channelSecret, channelAccessToken } = opts
+  const { channelSecret, channelAccessToken, skipVerify = false } = opts
 
   if (!channelSecret) {
     done(new Error('"channelSecret" option is required'))
@@ -35,11 +35,13 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
       ...(Array.isArray(existingPreParsing) ? existingPreParsing : [existingPreParsing]),
     ]
 
-    const existingPreHandler = routeOptions.preHandler || []
-    routeOptions.preHandler = [
-      verifySignature,
-      ...(Array.isArray(existingPreHandler) ? existingPreHandler : [existingPreHandler]),
-    ]
+    if (!skipVerify) {
+      const existingPreHandler = routeOptions.preHandler || []
+      routeOptions.preHandler = [
+        verifySignature,
+        ...(Array.isArray(existingPreHandler) ? existingPreHandler : [existingPreHandler]),
+      ]
+    }
   })
 
   const parseRawBody: preParsingHookHandler = (request, _reply, payload, done) => {
