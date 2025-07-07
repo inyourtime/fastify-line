@@ -482,5 +482,35 @@ describe('fastifyLine plugin', () => {
       expect(route.preParsing![0].name).toBe('parseRawBody')
       expect(route.preHandler).toBeUndefined()
     })
+
+    it('should accept requests without signature when skipVerify is true', async () => {
+      fastify.post(
+        '/webhook',
+        {
+          config: { lineWebhook: true },
+        },
+        (request) => {
+          return request[kRawBody]
+        },
+      )
+
+      await fastify.ready()
+
+      const response = await fastify.inject({
+        method: 'POST',
+        url: '/webhook',
+        payload: {
+          events: [webhook],
+          destination: DESTINATION,
+        },
+        // No signature header
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toStrictEqual({
+        events: [webhook],
+        destination: DESTINATION,
+      })
+    })
   })
 })

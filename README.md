@@ -84,6 +84,8 @@ await fastify.register(fastifyLine, {
 })
 ```
 
+> **Warning:** Only use `skipVerify: true` in development/testing environments. Always verify signatures in production to ensure webhook security. If you skip automatic verification, you can manually verify signatures in your webhook handler using `validateSignature` from `@line/bot-sdk`.
+
 ## Options
 
 | Option               | Type     | Required | Default | Description                                                      |
