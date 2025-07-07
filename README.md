@@ -74,12 +74,23 @@ fastify.post<{ Body: WebhookRequestBody }>(
 await fastify.listen({ port: 3000 })
 ```
 
+### Skip Signature Verification
+
+```ts
+await fastify.register(fastifyLine, {
+  channelSecret: process.env.LINE_CHANNEL_SECRET!,
+  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
+  skipVerify: true, // Skip signature verification
+})
+```
+
 ## Options
 
-| Option               | Type     | Required | Description                                                      |
-|----------------------|----------|----------|------------------------------------------------------------------|
-| `channelSecret`      | string   | Yes      | Your LINE channel secret (for signature verification)            |
-| `channelAccessToken` | string   | Yes      | Your LINE channel access token (for Messaging API client)        |
+| Option               | Type     | Required | Default | Description                                                      |
+|----------------------|----------|----------|---------|------------------------------------------------------------------|
+| `channelSecret`      | string   | Yes      | -       | Your LINE channel secret (for signature verification)            |
+| `channelAccessToken` | string   | Yes      | -       | Your LINE channel access token (for Messaging API client)        |
+| `skipVerify`         | boolean  | No       | `false` | Skip signature verification                                      |
 
 ## How It Works
 

@@ -35,4 +35,8 @@ export interface FastifyLineOptions {
    * This is used to send messages and interact with the LINE platform.
    */
   channelAccessToken: string
+  /**
+   * Set to `true` to skip signature verification.
+   */
+  skipVerify?: boolean
 }

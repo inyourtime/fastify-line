@@ -452,4 +452,35 @@ describe('fastifyLine plugin', () => {
       expect(preHandlerCalls).toBe(2)
     })
   })
+
+  describe('Skip Signature Verification', () => {
+    beforeEach(async () => {
+      fastify.register(printRoutes)
+
+      await fastify.register(fastifyLine, {
+        channelSecret: mockChannelSecret,
+        channelAccessToken: mockChannelAccessToken,
+        skipVerify: true,
+      })
+    })
+
+    it('should not add preHandler if skipVerify is true', async () => {
+      fastify.post(
+        '/webhook',
+        {
+          config: { lineWebhook: true },
+        },
+        () => {},
+      )
+
+      const route = fastify[kRoutes]()[0]
+
+      expect(route).toBeDefined()
+      expect(route.method).toBe('POST')
+      expect(route.url).toBe('/webhook')
+      expect(route.preParsing![0]).toBeInstanceOf(Function)
+      expect(route.preParsing![0].name).toBe('parseRawBody')
+      expect(route.preHandler).toBeUndefined()
+    })
+  })
 })
