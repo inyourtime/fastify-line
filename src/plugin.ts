@@ -6,7 +6,7 @@ import { InvalidSignatureError, MissingSignatureError } from './error.js'
 import type { FastifyLineOptions } from './types.js'
 
 const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) => {
-  if (fastify.line) {
+  if (fastify.hasDecorator('line')) {
     done(new Error('fastify-line plugin has already been registered'))
     return
   }
