@@ -22,7 +22,7 @@ fastify.post<{ Body: WebhookRequestBody }>(
 
     for (const event of events) {
       if (event.type === 'message' && event.message.type === 'text') {
-        await fastify.line.replyMessage({
+        await fastify.line.client.replyMessage({
           replyToken: event.replyToken,
           messages: [
             {
