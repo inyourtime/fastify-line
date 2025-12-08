@@ -6,7 +6,10 @@ declare module 'fastify' {
      * The LINE Messaging API client instance.
      * This client is used to send messages and interact with the LINE platform.
      */
-    line: messagingApi.MessagingApiClient
+    line: {
+      client: messagingApi.MessagingApiClient
+      blobClient: messagingApi.MessagingApiBlobClient
+    }
   }
 
   interface FastifyRequest {
