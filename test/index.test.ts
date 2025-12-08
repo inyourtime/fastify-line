@@ -316,11 +316,11 @@ describe('fastifyLine plugin', () => {
         headers: { 'X-Line-Signature': 'WqJD7WAIZhWcXThMCf8jZnwG3Hmn7EF36plkQGkj48w=' },
       })
 
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(401)
       expect(response.json()).toStrictEqual({
-        statusCode: 500,
+        statusCode: 401,
         code: 'FST_ERR_LINE_SIGNATURE_INVALID',
-        error: 'Internal Server Error',
+        error: 'Unauthorized',
         message: 'Line signature validation failed',
       })
       expect(setErrorHandlerCalled).toBe(true)
@@ -357,11 +357,11 @@ describe('fastifyLine plugin', () => {
         },
       })
 
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(401)
       expect(response.json()).toStrictEqual({
-        statusCode: 500,
+        statusCode: 401,
         code: 'FST_ERR_LINE_SIGNATURE_MISSING',
-        error: 'Internal Server Error',
+        error: 'Unauthorized',
         message: 'Line signature is missing',
       })
       expect(setErrorHandlerCalled).toBe(true)
