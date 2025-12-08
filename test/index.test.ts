@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import Fastify from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InvalidSignatureError, MissingSignatureError } from '../src/error.js'
-import fastifyLine, { type MessageEvent } from '../src/index.js' // Adjust path as needed
+import fastifyLine, { type MessageEvent } from '../src/index.js'
 import { kRoutes, printRoutes } from './helpers/print-routes.js'
 
 const DESTINATION = 'Uaaaabbbbccccddddeeeeffff'
@@ -80,8 +80,11 @@ describe('fastifyLine plugin', () => {
       })
 
       expect(fastify.line).toBeDefined()
-      expect(fastify.line).toHaveProperty('pushMessage')
-      expect(fastify.line).toHaveProperty('replyMessage')
+      expect(fastify.line.client).toBeDefined()
+      expect(fastify.line.blobClient).toBeDefined()
+      expect(fastify.line.client).toHaveProperty('pushMessage')
+      expect(fastify.line.client).toHaveProperty('replyMessage')
+      expect(fastify.line.blobClient).toHaveProperty('getMessageContent')
     })
 
     it('should throw error if plugin is registered multiple times', async () => {
@@ -313,11 +316,11 @@ describe('fastifyLine plugin', () => {
         headers: { 'X-Line-Signature': 'WqJD7WAIZhWcXThMCf8jZnwG3Hmn7EF36plkQGkj48w=' },
       })
 
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(401)
       expect(response.json()).toStrictEqual({
-        statusCode: 500,
+        statusCode: 401,
         code: 'FST_ERR_LINE_SIGNATURE_INVALID',
-        error: 'Internal Server Error',
+        error: 'Unauthorized',
         message: 'Line signature validation failed',
       })
       expect(setErrorHandlerCalled).toBe(true)
@@ -354,11 +357,11 @@ describe('fastifyLine plugin', () => {
         },
       })
 
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(401)
       expect(response.json()).toStrictEqual({
-        statusCode: 500,
+        statusCode: 401,
         code: 'FST_ERR_LINE_SIGNATURE_MISSING',
-        error: 'Internal Server Error',
+        error: 'Unauthorized',
         message: 'Line signature is missing',
       })
       expect(setErrorHandlerCalled).toBe(true)

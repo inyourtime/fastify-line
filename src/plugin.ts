@@ -22,10 +22,14 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
     return
   }
 
-  const { MessagingApiClient } = messagingApi
+  const { MessagingApiClient, MessagingApiBlobClient } = messagingApi
   const client = new MessagingApiClient({ channelAccessToken })
+  const blobClient = new MessagingApiBlobClient({ channelAccessToken })
 
-  fastify.decorate('line', client)
+  fastify.decorate('line', {
+    client,
+    blobClient,
+  })
 
   fastify.addHook('onRoute', (routeOptions) => {
     const skip = routeOptions.method !== 'POST' || !routeOptions.config?.lineWebhook
@@ -45,6 +49,8 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
       ]
     }
   })
+
+  done()
 
   const parseRawBody: preParsingHookHandler = (request, _reply, payload, done) => {
     const { bodyLimit } = request.routeOptions
@@ -86,8 +92,6 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
 
     done()
   }
-
-  done()
 }
 
 export const fastifyLine = fp(plugin, {
