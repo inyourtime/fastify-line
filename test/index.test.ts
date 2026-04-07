@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import Fastify from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InvalidSignatureError, MissingSignatureError } from '../src/error.js'
-import fastifyLine, { type MessageEvent } from '../src/index.js'
+import fastifyLine, { type webhook } from '../src/index.js'
 import { kRoutes, printRoutes } from './helpers/print-routes.js'
 
 const DESTINATION = 'Uaaaabbbbccccddddeeeeffff'
@@ -12,7 +12,7 @@ const mockChannelAccessToken = 'test_channel_access_token'
 describe('fastifyLine plugin', () => {
   let fastify: FastifyInstance
 
-  const webhook: MessageEvent = {
+  const webhook: webhook.MessageEvent = {
     message: {
       id: 'test_event_message_id',
       text: 'this is test message.😄😅😢😞😄😅😢😞',
@@ -126,9 +126,13 @@ describe('fastifyLine plugin', () => {
       expect(route).toBeDefined()
       expect(route.method).toBe('POST')
       expect(route.url).toBe('/webhook')
+      // @ts-expect-error
       expect(route.preParsing![0]).toBeInstanceOf(Function)
+      // @ts-expect-error
       expect(route.preParsing![0].name).toBe('parseRawBody')
+      // @ts-expect-error
       expect(route.preHandler![0]).toBeInstanceOf(Function)
+      // @ts-expect-error
       expect(route.preHandler![0].name).toBe('verifySignature')
     })
 
@@ -494,7 +498,9 @@ describe('fastifyLine plugin', () => {
       expect(route).toBeDefined()
       expect(route.method).toBe('POST')
       expect(route.url).toBe('/webhook')
+      // @ts-expect-error
       expect(route.preParsing![0]).toBeInstanceOf(Function)
+      // @ts-expect-error
       expect(route.preParsing![0].name).toBe('parseRawBody')
       expect(route.preHandler).toBeUndefined()
     })

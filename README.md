@@ -36,7 +36,7 @@ Register the plugin with your LINE channel credentials:
 
 ```ts
 import Fastify from 'fastify'
-import fastifyLine, { type WebhookRequestBody } from 'fastify-line'
+import fastifyLine, { type webhook } from 'fastify-line'
 
 const fastify = Fastify()
 
@@ -45,7 +45,7 @@ await fastify.register(fastifyLine, {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
 })
 
-fastify.post<{ Body: WebhookRequestBody }>(
+fastify.post<{ Body: webhook.CallbackRequest }>(
   '/webhook',
   {
     config: { lineWebhook: true }, // Enable LINE webhook handling for this route
@@ -56,7 +56,7 @@ fastify.post<{ Body: WebhookRequestBody }>(
     for (const event of events) {
       if (event.type === 'message' && event.message.type === 'text') {
         await fastify.line.client.replyMessage({
-          replyToken: event.replyToken,
+          replyToken: event.replyToken!,
           messages: [
             {
               type: 'text',
