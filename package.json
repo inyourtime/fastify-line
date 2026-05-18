@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
+    "@inyourtime/shared-configs": "^0.1.1",
     "@line/bot-sdk": "^11.0.0",
     "@types/node": "^25.0.0",
     "@vitest/coverage-v8": "^4.1.2",
