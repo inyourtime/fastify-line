@@ -44,7 +44,7 @@
   "dependencies": {
     "@fastify/error": "^4.2.0",
     "fastify-plugin": "^6.0.0",
-    "raw-body": "^3.0.2"
+    "raw-body": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
