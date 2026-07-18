@@ -41,6 +41,9 @@
   "bugs": {
     "url": "https://github.com/inyourtime/fastify-line/issues"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@fastify/error": "^4.2.0",
     "fastify-plugin": "^6.0.0",
