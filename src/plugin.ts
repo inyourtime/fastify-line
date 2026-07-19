@@ -1,5 +1,11 @@
+import { Readable } from 'node:stream'
 import { LINE_SIGNATURE_HTTP_HEADER_NAME, messagingApi, validateSignature } from '@line/bot-sdk'
-import type { FastifyPluginCallback, preHandlerHookHandler, preParsingHookHandler } from 'fastify'
+import type {
+  FastifyPluginCallback,
+  preHandlerHookHandler,
+  preParsingHookHandler,
+  RequestPayload,
+} from 'fastify'
 import fp from 'fastify-plugin'
 import getRawBody from 'raw-body'
 import { InvalidSignatureError, MissingSignatureError } from './error.js'
@@ -58,23 +64,27 @@ const plugin: FastifyPluginCallback<FastifyLineOptions> = (fastify, opts, done) 
     getRawBody(
       payload,
       {
-        length: null,
+        length: request.headers['content-length'],
         limit: bodyLimit, // avoid memory leak
-        encoding: 'utf8', // ensure the body is a string
       },
-      (err, string) => {
+      (err, buffer) => {
         if (err) {
-          /**
-           * the error is managed by fastify server
-           */
+          done(err)
           return
         }
 
-        request.rawBody = string
+        request.rawBody = buffer.toString('utf8')
+
+        const rawBodyStream: RequestPayload = new Readable({
+          read() {
+            this.push(buffer)
+            this.push(null)
+          },
+        })
+        rawBodyStream.receivedEncodedLength = buffer.length
+        done(null, rawBodyStream)
       },
     )
-
-    done(null, payload)
   }
 
   const verifySignature: preHandlerHookHandler = (request, _reply, done) => {
