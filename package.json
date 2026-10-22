@@ -55,7 +55,7 @@
     "fastify": "^5.8.4",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
-    "vitest": "^4.1.2"
+    "vitest": "^5.0.5"
   },
   "peerDependencies": {
     "@line/bot-sdk": ">=11.0.0"
